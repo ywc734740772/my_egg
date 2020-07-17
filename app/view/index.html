@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>登录</title>
+    <link href="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/theme-chalk/index.css" rel="stylesheet">
+    <script src="https://cdn.bootcdn.net/ajax/libs/vue/2.6.11/vue.min.js"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/element-ui/2.13.2/index.js"></script>
+    <style>
+        body,html{
+            margin: 0;
+            padding: 0;
+        }
+        #app{
+            height: 100vh;
+        }
+        .login-box{
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .login-content{
+            width: 450px;
+            min-height: 300px;
+            border-radius: 3px;
+            margin: 0 auto;
+            z-index: 2001;
+        }
+        .login-title{
+            text-align: center;
+            color: #1d8cf8;
+            font-size: 30px;
+        }
+        .login-form{
+            min-width: 300px;
+            max-width: 500px;
+            padding: 20px 20px 0;
+        }
+        .w100pre{
+            width: 100%;
+        }
+        #J_dotLine{
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+        }
+        .foot_register{
+            text-align: right;
+        }
+        .foot_register{
+            padding: 0 20px;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div class="login-box">
+        <canvas id="J_dotLine"></canvas>
+        <div :key="isLogin" v-if="isLogin" class="login-content">
+            <h2 class="login-title">登  录</h2>
+            <el-form :model="ruleForm" :rules="rules" ref="ruleForm" label-width="80px" class="login-form">
+                <el-form-item label="用户名" prop="username"><el-input v-model="ruleForm.username"></el-input></el-form-item>
+                <el-form-item label="密码" prop="password"><el-input type="password" v-model="ruleForm.password" autocomplete="off"></el-input></el-form-item>
+                <el-form-item><el-button class="w100pre" type="primary" @click="submitForm('ruleForm')">登录</el-button></el-form-item>
+            </el-form>
+            <div class="foot_register">
+                <el-button type="text" @click="handleToggleRegister">立即注册</el-button>
+            </div>
+        </div>
+
+        <div v-else class="login-content">
+                <h2 class="login-title">注  册</h2>
+                <el-form :key="isLogin" :model="registerRuleForm" :rules="registerRules" ref="registerRuleForm" label-width="80px" class="login-form">
+                    <el-form-item label="用户名" prop="userName"><el-input v-model="registerRuleForm.userName"></el-input></el-form-item>
+                    <el-form-item label="密码" prop="pass"><el-input type="password" v-model="registerRuleForm.pass" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="确认密码" prop="checkPass"><el-input type="password" v-model="registerRuleForm.checkPass" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="手机号" prop="phone"><el-input type="tel" v-model="registerRuleForm.phone" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="邮箱" prop="email"><el-input type="text" v-model="registerRuleForm.email" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="年龄" prop="age"><el-input type="age" v-model="registerRuleForm.age" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="性别" prop="gender">
+                        <el-radio-group v-model="registerRuleForm.gender">
+                            <el-radio label="1">男</el-radio>
+                            <el-radio label="2">女</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item><el-button class="w100pre" type="primary" @click="submitForm('registerRuleForm')">立即注册</el-button></el-form-item>
+                </el-form>
+                <div class="foot_register">
+                    <el-button type="text" @click="handleToggleLogin">立即登录</el-button>
+                </div>
+            </div>
+
+
+        <!--            <el-dialog :visible.sync="visible" title="提示" :before-close="handleClose">-->
+        <!--                <div slot="footer" class="dialog-footer">-->
+        <!--                    <el-button @click="handleClose">取 消</el-button>-->
+        <!--                    <el-button type="primary" @click="handleOk">确 定</el-button>-->
+        <!--                </div>-->
+        <!--            </el-dialog>-->
+    </div>
+</div>
+</body>
+</html>
+<script>
+  const getCookie = (key) => {
+    const arr = document.cookie.split(';');
+    const obj = {};
+    for (let data of arr) {
+      const [key, val] = data.split('=');
+      obj[key] = val;
+    }
+    return obj[key] || '';
+  };
+    const app = new Vue({
+        el: '#app',
+        data: () => {
+          const validatePhone = (rule, value, callback) => {
+            if (!new RegExp("^[1][0-9]{10}$").test(value)) {
+              callback(new Error('请输入正确的手机号码'));
+            } else {
+              callback();
+            }
+          };
+          const validateUserName = (rule, value, callback) => {
+            if (!new RegExp("^(?![0-9]+$).{2,12}$").test(value)) {
+              callback(new Error('用户名长度为2-12位, 不能为纯数字'));
+            } else {
+              callback();
+            }
+          };
+          const validatePass = (rule, value, callback) => {
+            console.log(value);
+            if (value === '') {
+              callback(new Error('请输入密码'));
+            }  else if (!new RegExp("(?!.*\\s)(?!^[\u4e00-\u9fa5]+$)(?!^[0-9]+$)(?!^[A-z]+$)(?!^[^A-z0-9]+$)^.{6,16}$").test(value)) {
+              callback(new Error('密码长度为6-16位，由（数字、字母或符号）组成'));
+            }
+            callback();
+          };
+          const validatePass2 = (rule, value, callback) => {
+            console.log(app, value);
+            if (value === '') {
+              callback(new Error('请再次输入密码'));
+            } else if (value !== app.registerRuleForm.pass) {
+              callback(new Error('两次输入密码不一致!'));
+            } else {
+              callback();
+            }
+          };
+            return {
+                isLogin: true,
+                visible: false,
+                csrfToken: getCookie('csrfToken'),
+                ruleForm: {
+                    username: '',
+                    password: '',
+                },
+                rules: {
+                    username: [ { required :true ,message: '用户名不能为空！', trigger: 'blur' } ],
+                    password: [ { required :true, message: '密码不能为空！', trigger: 'blur' } ],
+                },
+                registerRuleForm: {
+                    userName: '',
+                    pass: '',
+                    checkPass: '',
+                    phone: '',
+                    email: '',
+                    age: '',
+                    gender: '1',
+                },
+                registerRules: {
+                    userName: [ { required :true,  validator: validateUserName , trigger: 'blur' } ],
+                    pass: [ { required :true, validator: validatePass, trigger: 'blur' } ],
+                    checkPass: [ { required :true, validator: validatePass2, trigger: 'blur' } ],
+                    phone: [ { required :true,  validator: validatePhone, trigger: 'blur' } ],
+                }
+            }
+        },
+        methods: {
+            submitForm(formName){
+                this.$refs[formName].validate((valid) => {
+                    if (valid) {
+                        if (formName === 'ruleForm') {
+                          this.handleLogin();
+                        } else if (formName === 'registerRuleForm') {
+                          this.handleRegister()
+                        }
+
+                    } else {
+                        console.log('error submit!!');
+                        return false;
+                    }
+                });
+            },
+            resetForm(formName) {
+                this.$refs[formName].resetFields();
+            },
+          async handleLogin() {
+              let result = await fetch(`http://127.0.0.1:7001/login?_csrf=${this.csrfToken}`, {
+               method: 'post',
+               headers: {
+                 'Accept': 'application/json',
+                 'Content-Type': 'application/json'
+               },
+               body: JSON.stringify(this.ruleForm),
+             });
+            const { status, message, data } = await result.json();
+            if (status === 1) {
+              this.$message.error(message);
+            } else {
+              this.$message.success(message);
+              const { id } = data || {};
+              setTimeout(() => {
+                location.href = `http://150.158.199.229:8081?id=${id}`;
+              }, 1000);
+            }
+          },
+          async handleRegister() {
+              const { userName, pass, gender } = this.registerRuleForm;
+            let data = await fetch(`http://127.0.0.1:7001/register?_csrf=${this.csrfToken}`, {
+              method: 'post',
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                ...this.registerRuleForm,
+                username: userName,
+                password: pass,
+                gender: gender === '1' ? '男' : '女',
+              }),
+            });
+            const { status, message } = await data.json();
+            if (status === 1) {
+              this.$message.error(message);
+            } else {
+              this.$message.success(message);
+              this.handleToggleLogin();
+            }
+          },
+          handleToggleRegister() {
+            this.resetForm('ruleForm');
+            this.isLogin = false;
+          },
+          handleToggleLogin() {
+            this.resetForm('registerRuleForm');
+            this.isLogin = true;
+          },
+            handleClose() {
+                this.resetForm('ruleForm');
+                this.visible = false;
+            },
+            handleOk() {
+                this.resetForm('ruleForm');
+                this.visible = false;
+            },
+        }
+    })
+</script>
+<script>
+    function Dotline(option) {
+        this.opt = this.extend({
+            dom: 'J_dotLine',//画布id
+            cw: 1000,//画布宽
+            ch: 500,//画布高
+            ds: 100,//点的个数
+            r: 0.5,//圆点半径
+            dis: 100//触发连线的距离
+        }, option);
+        this.c = document.getElementById(this.opt.dom);//canvas元素id
+        this.ctx = this.c.getContext('2d');
+        this.c.width = this.opt.cw;//canvas宽
+        this.c.height = this.opt.ch;//canvas高
+        this.dotSum = this.opt.ds;//点的数量
+        this.radius = this.opt.r;//圆点的半径
+        this.disMax = this.opt.dis * this.opt.dis;//点与点触发连线的间距
+        this.dots = [];
+        //requestAnimationFrame控制canvas动画
+        var RAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.oRequestAnimationFrame || window.msRequestAnimationFrame || function (callback) {
+            window.setTimeout(callback, 1000 / 60);
+        };
+        var _self = this;
+        //增加鼠标效果
+        var mousedot = { x: null, y: null, label: 'mouse' };
+        this.c.onmousemove = function (e) {
+            var e = e || window.event;
+            mousedot.x = e.clientX - _self.c.offsetLeft;
+            mousedot.y = e.clientY - _self.c.offsetTop;
+        };
+        this.c.onmouseout = function (e) {
+            mousedot.x = null;
+            mousedot.y = null;
+        }
+        //控制动画
+        this.animate = function () {
+            _self.ctx.clearRect(0, 0, _self.c.width, _self.c.height);
+            _self.drawLine([mousedot].concat(_self.dots));
+            RAF(_self.animate);
+        };
+    }
+    //合并配置项，es6直接使用obj.assign();
+    Dotline.prototype.extend = function (o, e) {
+        for (var key in e) {
+            if (e[key]) {
+                o[key] = e[key]
+            }
+        }
+        return o;
+    };
+    //画点
+    Dotline.prototype.addDots = function () {
+        var dot;
+        for (var i = 0; i < this.dotSum; i++) {//参数
+            dot = {
+                x: Math.floor(Math.random() * this.c.width) - this.radius,
+                y: Math.floor(Math.random() * this.c.height) - this.radius,
+                ax: (Math.random() * 2 - 1) / 1.5,
+                ay: (Math.random() * 2 - 1) / 1.5
+            }
+            this.dots.push(dot);
+        }
+    };
+    //点运动
+    Dotline.prototype.move = function (dot) {
+        dot.x += dot.ax;
+        dot.y += dot.ay;
+        //点碰到边缘返回
+        dot.ax *= (dot.x > (this.c.width - this.radius) || dot.x < this.radius) ? -1 : 1;
+        dot.ay *= (dot.y > (this.c.height - this.radius) || dot.y < this.radius) ? -1 : 1;
+        //绘制点
+        this.ctx.beginPath();
+        this.ctx.arc(dot.x, dot.y, this.radius, 0, Math.PI * 2, true);
+        this.ctx.stroke();
+    };
+    //点之间画线
+    Dotline.prototype.drawLine = function (dots) {
+        var nowDot;
+        var _that = this;
+        //自己的思路：遍历两次所有的点，比较点之间的距离，函数的触发放在animate里
+        this.dots.forEach(function (dot) {
+
+            _that.move(dot);
+            for (var j = 0; j < dots.length; j++) {
+                nowDot = dots[j];
+                if (nowDot === dot || nowDot.x === null || nowDot.y === null) continue;//continue跳出当前循环开始新的循环
+                var dx = dot.x - nowDot.x,//别的点坐标减当前点坐标
+                    dy = dot.y - nowDot.y;
+                var dc = dx * dx + dy * dy;
+                if (Math.sqrt(dc) > Math.sqrt(_that.disMax)) continue;
+                // 如果是鼠标，则让粒子向鼠标的位置移动
+                if (nowDot.label && Math.sqrt(dc) > Math.sqrt(_that.disMax) / 2) {
+                    dot.x -= dx * 0.02;
+                    dot.y -= dy * 0.02;
+                }
+                var ratio;
+                ratio = (_that.disMax - dc) / _that.disMax;
+
+                _that.ctx.beginPath();
+                _that.ctx.lineWidth = ratio / 2;
+                _that.ctx.strokeStyle = 'rgba(0,0,0,' + (ratio + 0.2) + ')';
+                _that.ctx.moveTo(dot.x, dot.y);
+                _that.ctx.lineTo(nowDot.x, nowDot.y);
+                _that.ctx.stroke();//不描边看不出效果
+
+                //dots.splice(dots.indexOf(dot), 1);
+            }
+        });
+    };
+    //开始动画
+    Dotline.prototype.start = function () {
+        var _that = this;
+        this.addDots();
+        setTimeout(function () {
+            _that.animate();
+        }, 100);
+    }
+    //调用
+    window.onload = function () {
+        var cw = window.innerWidth;
+        var ch = window.innerHeight;
+        var dotline = new Dotline({
+            dom: 'J_dotLine',//画布id
+            cw,//画布宽
+            ch,//画布高
+            ds: 150,//点的个数
+            r: 0.5,//圆点半径
+            dis: 80//触发连线的距离
+        }).start();
+    }
+    //调用
+    window.onresize = function () {
+        var cw = window.innerWidth;
+        var ch = window.innerHeight;
+        var dotline = new Dotline({
+            dom: 'J_dotLine',//画布id
+            cw,//画布宽
+            ch,//画布高
+            ds: 50,//点的个数
+            r: 0.5,//圆点半径
+            dis: 80//触发连线的距离
+        }).start();
+    }
+</script>
