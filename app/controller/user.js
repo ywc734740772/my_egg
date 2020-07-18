@@ -45,7 +45,8 @@ class UserController extends Controller {
       };
       return;
     }
-    const create_date = moment().format('YYYY-MM-DD HH:mm:ss');
+    // const create_date = moment().format('YYYY-MM-DD HH:mm:ss');
+    const create_date = this.app.mysql.literals.now;
     console.log('create_date', create_date);
     const result = await ctx.service.user.insertUserInfo({ username, password, phone, email, age, gender, create_date });
     console.log(result);
