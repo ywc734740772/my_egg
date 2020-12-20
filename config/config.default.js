@@ -61,8 +61,15 @@ module.exports = appInfo => {
 
     config.cors = {
         origin:'*',
-        allowMethods: 'GET,PUT,POST,DELETE'
+        allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH',
     };
+
+    config.security = {
+        csrf: {
+            enable: false,
+        }
+    };
+
 
     return {
         ...config,

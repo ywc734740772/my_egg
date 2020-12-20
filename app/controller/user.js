@@ -1,7 +1,6 @@
 'use strict';
 
 const Controller = require('egg').Controller;
-const moment = require('moment');
 class UserController extends Controller {
   async login() {
     const { ctx } = this;
@@ -10,7 +9,7 @@ class UserController extends Controller {
     console.log(getUser);
     let result = {
       status: 1,
-      message: '用户名不存在',
+      message: '用户名或密码错误',
     };
     if (getUser) {
       if (password === getUser.password) {
@@ -32,10 +31,33 @@ class UserController extends Controller {
   }
   async register() {
     const { ctx } = this;
-    const { username, password, phone, email, age, gender } = ctx.request.body;
+    const { username, password, phone, code, email, age, gender } = ctx.request.body;
+    const dataInfo = {
+      username: '用户名',
+      password: '密码',
+      phone: '手机号',
+      code: '邀请码',
+    };
+    console.log(ctx.request.body)
+    for (const item in dataInfo) {
+      if (ctx.request.body[item] === '') {
+        ctx.body = {
+          status: 1,
+          message: `${item}不能为空！`,
+        };
+        return;
+      }
+    }
 
+    const vCode = '734740772';
+    if (vCode !== code) {
+      ctx.body = {
+        status: 1,
+        message: '邀请码不正确！',
+      };
+      return;
+    }
     const getUser = await ctx.service.user.queryUserInfo({ username });
-
     console.log(getUser);
 
     if (getUser) {

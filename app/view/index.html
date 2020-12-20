@@ -80,6 +80,7 @@
                     <el-form-item label="密码" prop="pass"><el-input type="password" v-model="registerRuleForm.pass" autocomplete="off"></el-input></el-form-item>
                     <el-form-item label="确认密码" prop="checkPass"><el-input type="password" v-model="registerRuleForm.checkPass" autocomplete="off"></el-input></el-form-item>
                     <el-form-item label="手机号" prop="phone"><el-input type="tel" v-model="registerRuleForm.phone" autocomplete="off"></el-input></el-form-item>
+                    <el-form-item label="邀请码" prop="code"><el-input type="tel" v-model="registerRuleForm.code" autocomplete="off"></el-input></el-form-item>
                     <el-form-item label="邮箱" prop="email"><el-input type="text" v-model="registerRuleForm.email" autocomplete="off"></el-input></el-form-item>
                     <el-form-item label="年龄" prop="age"><el-input type="age" v-model="registerRuleForm.age" autocomplete="off"></el-input></el-form-item>
                     <el-form-item label="性别" prop="gender">
@@ -169,6 +170,7 @@
                     pass: '',
                     checkPass: '',
                     phone: '',
+                    code: '',
                     email: '',
                     age: '',
                     gender: '1',
@@ -178,6 +180,7 @@
                     pass: [ { required :true, validator: validatePass, trigger: 'blur' } ],
                     checkPass: [ { required :true, validator: validatePass2, trigger: 'blur' } ],
                     phone: [ { required :true,  validator: validatePhone, trigger: 'blur' } ],
+                    code: [ { required :true,  message: '邀请码不能为空！', trigger: 'blur' } ],
                 }
             }
         },
